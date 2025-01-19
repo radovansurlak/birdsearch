@@ -22,22 +22,29 @@ export const SearchInput: React.FC = () => {
 	const [isMouseHovering, setIsMouseHovering] = useState(false);
 	const [isTyping, setIsTyping] = useState(false);
 	const typingTimeout = useRef<NodeJS.Timeout | null>(null);
-
+	const suggestionsRef = useRef<HTMLUListElement>(null);
+	const itemsRef = useRef<(HTMLLIElement | null)[]>([]);
 	const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-
-    console.log(event.key);
-		if (isMouseHovering) {
-			return;
-		}
+		if (isMouseHovering) return;
 
 		if (event.key === "ArrowDown") {
-			setActiveIndex((prev) =>
-				prev === null || prev === suggestions.length - 1 ? 0 : prev + 1
-			);
+			setActiveIndex((prev) => {
+				const newIndex =
+					prev === null || prev === suggestions.length - 1
+						? 0
+						: prev + 1;
+				scrollToActiveItem(newIndex);
+				return newIndex;
+			});
 		} else if (event.key === "ArrowUp") {
-			setActiveIndex((prev) =>
-				prev === null || prev === 0 ? suggestions.length - 1 : prev - 1
-			);
+			setActiveIndex((prev) => {
+				const newIndex =
+					prev === null || prev === 0
+						? suggestions.length - 1
+						: prev - 1;
+				scrollToActiveItem(newIndex);
+				return newIndex;
+			});
 		} else if (event.key === "Enter" && activeIndex !== null) {
 			handleSuggestionClick(suggestions[activeIndex].id);
 		} else if (event.key === "Escape") {
@@ -54,6 +61,15 @@ export const SearchInput: React.FC = () => {
 	const handleMouseLeave = () => {
 		setActiveIndex(null);
 		setIsMouseHovering(false);
+	};
+
+	const scrollToActiveItem = (index: number) => {
+		if (itemsRef.current[index]) {
+			itemsRef.current[index]?.scrollIntoView({
+				behavior: "smooth",
+				block: "nearest",
+			});
+		}
 	};
 
 	const fetchSuggestions = useCallback(
@@ -78,6 +94,9 @@ export const SearchInput: React.FC = () => {
 
 	const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
 		setIsTyping(true);
+
+		setActiveIndex(null);
+
 		const value = event.target.value;
 		setQuery(value);
 
@@ -121,21 +140,27 @@ export const SearchInput: React.FC = () => {
 							placeholder="Search for birds..."
 							onKeyDown={handleKeyDown}
 						/>
-						{isTyping || loading ? (
-							<PuffLoader
-								size="15"
-								cssOverride={{
-									top: "-5px",
-									right: "11px",
-								}}
-							/>
-						) : (
-							<LuSearch size="20px" className="search-icon" />
-						)}
+
+						<PuffLoader
+							className="loading-icon"
+							size="15"
+							cssOverride={{
+								position: "absolute",
+								top: "7px",
+								right: "20px",
+								opacity: loading || isTyping ? 1 : 0,
+							}}
+						/>
+						<LuSearch
+							size="20px"
+							className={`search-icon ${
+								!loading && !isTyping ? "show" : ""
+							}`}
+						/>
 					</div>
 				</div>
 				{suggestions.length > 0 && (
-					<ul className="suggestions-list">
+					<ul className="suggestions-list" ref={suggestionsRef}>
 						{suggestions.map((item, index) => (
 							<li
 								key={item.id}
@@ -146,6 +171,7 @@ export const SearchInput: React.FC = () => {
 								className={
 									activeIndex === index ? "active" : ""
 								}
+								ref={(el) => (itemsRef.current[index] = el)} // Attach refs to items
 							>
 								{emphasizeQueryInTextResult(item.title, query)}
 							</li>

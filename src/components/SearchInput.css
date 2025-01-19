@@ -1,6 +1,6 @@
 .search-container {
-  display: flex;
-  flex-direction: column;
+	display: flex;
+	flex-direction: column;
 	width: calc(min(500px, 50vw));
 	margin: 0 auto;
 	margin-top: 300px;
@@ -12,7 +12,21 @@
 	border-radius: 30px;
 	padding: 7px;
 	background: rgb(246, 246, 246);
+	position: relative;
 	transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.search-icon {
+	transition: opacity 0.3s ease-in-out;
+	opacity: 0;
+}
+
+.search-icon.show {
+	opacity: 1;
+}
+
+.loading-icon {
+	transition: opacity 0.3s ease-in-out;
 }
 
 .input-wrapper {
@@ -58,7 +72,7 @@
 	list-style: none;
 	margin: 0;
 	padding: 0;
-  padding-bottom: 5px;
+	padding-bottom: 5px;
 	background: white;
 	max-height: 300px;
 	overflow-y: auto;
@@ -72,21 +86,51 @@
 .suggestions-list li:hover,
 .suggestions-list li:focus,
 .suggestions-list li.active {
-	background: #007bff;
+	background: #75b7ff;
 	color: white;
 }
 
 .message {
-  align-self: center;
+	align-self: center;
 	color: #888;
 	font-size: 14px;
 	margin-top: 20px;
 }
 
 .selected-id {
-  font-weight: 500;  
+	font-weight: 500;
 	margin-top: 20px;
-  align-self: center;
+	align-self: center;
 	color: #888;
 	font-size: 14px;
+}
+
+.suggestions-list {
+	scrollbar-width: thin; /* For Firefox */
+	scrollbar-color: #c7c7c7 #ffffff; /* Thumb and track colors for Firefox */
+}
+
+/* WebKit browsers (Chrome, Edge, Safari) */
+.suggestions-list::-webkit-scrollbar {
+	width: 8px; /* Width of the scrollbar */
+	height: 8px; /* Height of the scrollbar for horizontal scroll */
+}
+
+.suggestions-list::-webkit-scrollbar-track {
+	background: #ffffff; /* Background color of the track */
+	border-radius: 4px; /* Optional: Rounded corners for the track */
+}
+
+.suggestions-list::-webkit-scrollbar-thumb {
+	background: #c7c7c7; /* Scrollbar thumb color */
+	border-radius: 4px; /* Rounded corners for the thumb */
+}
+
+.suggestions-list::-webkit-scrollbar-thumb:hover {
+	background: #555; /* Thumb color when hovered */
+}
+
+/* Optional: Adding a shadow for the scrollbar */
+.suggestions-list::-webkit-scrollbar-thumb {
+	box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
 }
