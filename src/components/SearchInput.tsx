@@ -1,10 +1,15 @@
 import axios from "axios";
-import React, { useCallback, useState } from "react";
-import { FaSearch } from "react-icons/fa";
+import React, { useCallback, useRef, useState } from "react";
+import { LuSearch } from "react-icons/lu";
+import { PuffLoader } from "react-spinners";
+import {
+	API_URL,
+	LOADING_EFFECT_DEBOUNCE_TIME_MS,
+	SEARCH_INPUT_DEBOUNCE_TIME_MS,
+} from "../constants";
 import { Bird } from "../types";
 import { debounce, emphasizeQueryInTextResult } from "../utils";
 import "./SearchInput.css";
-import { API_URL, SEARCH_INPUT_DEBOUNCE_TIME_MS } from "../constants";
 
 export const SearchInput: React.FC = () => {
 	const [query, setQuery] = useState<string>("");
@@ -13,6 +18,43 @@ export const SearchInput: React.FC = () => {
 	const [focused, setFocused] = useState<boolean>(false);
 	const [selectedId, setSelectedId] = useState<number | null>(null);
 	const [message, setMessage] = useState<string>("");
+	const [activeIndex, setActiveIndex] = useState<number | null>(null);
+	const [isMouseHovering, setIsMouseHovering] = useState(false);
+	const [isTyping, setIsTyping] = useState(false);
+	const typingTimeout = useRef<NodeJS.Timeout | null>(null);
+
+	const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+
+    console.log(event.key);
+		if (isMouseHovering) {
+			return;
+		}
+
+		if (event.key === "ArrowDown") {
+			setActiveIndex((prev) =>
+				prev === null || prev === suggestions.length - 1 ? 0 : prev + 1
+			);
+		} else if (event.key === "ArrowUp") {
+			setActiveIndex((prev) =>
+				prev === null || prev === 0 ? suggestions.length - 1 : prev - 1
+			);
+		} else if (event.key === "Enter" && activeIndex !== null) {
+			handleSuggestionClick(suggestions[activeIndex].id);
+		} else if (event.key === "Escape") {
+			setActiveIndex(null);
+			setSuggestions([]);
+		}
+	};
+
+	const handleMouseEnter = (index: number) => {
+		setActiveIndex(index);
+		setIsMouseHovering(true);
+	};
+
+	const handleMouseLeave = () => {
+		setActiveIndex(null);
+		setIsMouseHovering(false);
+	};
 
 	const fetchSuggestions = useCallback(
 		debounce(async (searchQuery: string) => {
@@ -35,6 +77,7 @@ export const SearchInput: React.FC = () => {
 	);
 
 	const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+		setIsTyping(true);
 		const value = event.target.value;
 		setQuery(value);
 
@@ -44,21 +87,20 @@ export const SearchInput: React.FC = () => {
 			setSuggestions([]);
 			setMessage("Enter at least 3 characters");
 		}
+
+		if (typingTimeout.current) {
+			clearTimeout(typingTimeout.current); // Clear the previous timeout
+		}
+
+		typingTimeout.current = setTimeout(() => {
+			setIsTyping(false);
+		}, LOADING_EFFECT_DEBOUNCE_TIME_MS);
 	};
 
 	const handleSuggestionClick = (id: number) => {
 		setSelectedId(id);
 		setSuggestions([]);
 		setQuery("");
-	};
-
-	const handleKeyDown = (
-		event: React.KeyboardEvent<HTMLLIElement>,
-		id: number
-	) => {
-		if (event.key === "Enter") {
-			handleSuggestionClick(id);
-		}
 	};
 
 	return (
@@ -77,20 +119,32 @@ export const SearchInput: React.FC = () => {
 							onFocus={() => setFocused(true)}
 							onBlur={() => setFocused(false)}
 							placeholder="Search for birds..."
+							onKeyDown={handleKeyDown}
 						/>
-						<FaSearch className="search-icon" />
+						{isTyping || loading ? (
+							<PuffLoader
+								size="15"
+								cssOverride={{
+									top: "-5px",
+									right: "11px",
+								}}
+							/>
+						) : (
+							<LuSearch size="20px" className="search-icon" />
+						)}
 					</div>
 				</div>
-				{/* {loading && <div className="loading">Loading...</div>} */}
 				{suggestions.length > 0 && (
 					<ul className="suggestions-list">
-						{suggestions.map((item) => (
+						{suggestions.map((item, index) => (
 							<li
 								key={item.id}
 								onClick={() => handleSuggestionClick(item.id)}
 								tabIndex={0}
-								onKeyDown={(event) =>
-									handleKeyDown(event, item.id)
+								onMouseEnter={() => handleMouseEnter(index)}
+								onMouseLeave={handleMouseLeave}
+								className={
+									activeIndex === index ? "active" : ""
 								}
 							>
 								{emphasizeQueryInTextResult(item.title, query)}
