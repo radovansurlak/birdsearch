@@ -5,6 +5,7 @@ import { PuffLoader } from "react-spinners";
 import {
 	API_URL,
 	LOADING_EFFECT_DEBOUNCE_TIME_MS,
+	NO_RESULTS_MESSAGE,
 	SEARCH_INPUT_DEBOUNCE_TIME_MS,
 } from "../constants";
 import { Bird } from "../types";
@@ -81,7 +82,7 @@ export const SearchInput: React.FC = () => {
 				);
 				setSuggestions(response.data);
 				setMessage(
-					response.data.length === 0 ? "No results found" : ""
+					response.data.length === 0 ? NO_RESULTS_MESSAGE : ""
 				);
 			} catch (error) {
 				setMessage("Error fetching suggestions");
@@ -94,10 +95,10 @@ export const SearchInput: React.FC = () => {
 
 	const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
 		setIsTyping(true);
-
 		setActiveIndex(null);
 
 		const value = event.target.value;
+
 		setQuery(value);
 
 		if (value.length >= 3) {
