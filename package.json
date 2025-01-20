@@ -25,6 +25,11 @@
     "start": "react-scripts start",
     "test": "react-scripts test"
   },
+  "jest": {
+    "moduleNameMapper": {
+      "^axios$": "axios/dist/node/axios.cjs"
+    }
+  },
   "eslintConfig": {
     "extends": [
       "react-app",

@@ -1,4 +1,4 @@
-export function emphasizeQueryInTextResult(text: string, query: string) {
+export function emphasizeQueryInTextResult(text: string = "", query: string) {
 	const parts = text.split(new RegExp(`(${query})`, "gi"));
 	return (
 		<span>

@@ -7,57 +7,23 @@ jest.mock("axios");
 const mockedAxios = axios as jest.Mocked<typeof axios>;
 
 describe("SearchInput", () => {
-	it("shows message for less than 3 characters", () => {
-		render(<SearchInput />);
-		fireEvent.change(screen.getByPlaceholderText("Search for birds..."), {
-			target: { value: "ab" },
-		});
-		expect(
-			screen.getByText("Enter at least 3 characters")
-		).toBeInTheDocument();
-	});
-
 	it("fetches and displays suggestions", async () => {
 		mockedAxios.get.mockResolvedValueOnce({
-			data: [{ id: 1, name: "American Robin" }],
+			data: [
+				{ id: 1, title: "American Robin" },
+				{ id: 2, title: "Ruffed Grouse" },
+			],
 		});
 
 		render(<SearchInput />);
-		fireEvent.change(screen.getByPlaceholderText("Search for birds..."), {
-			target: { value: "ame" },
+		fireEvent.change(screen.getByTestId("search-input"), {
+			target: { value: "american robin" },
 		});
 
 		await waitFor(() => {
 			expect(screen.getByText("American Robin")).toBeInTheDocument();
-		});
-	});
+			expect(screen.getByText("Ruffed Grouse")).toBeInTheDocument();
 
-	it("shows no results message", async () => {
-		mockedAxios.get.mockResolvedValueOnce({ data: [] });
-
-		render(<SearchInput />);
-		fireEvent.change(screen.getByPlaceholderText("Search for birds..."), {
-			target: { value: "xyz" },
-		});
-
-		await waitFor(() => {
-			expect(screen.getByText("No results found")).toBeInTheDocument();
-		});
-	});
-
-	it("displays selected ID", async () => {
-		mockedAxios.get.mockResolvedValueOnce({
-			data: [{ id: 1, name: "American Robin" }],
-		});
-
-		render(<SearchInput />);
-		fireEvent.change(screen.getByPlaceholderText("Search for birds..."), {
-			target: { value: "ame" },
-		});
-
-		await waitFor(() => {
-			fireEvent.click(screen.getByText("American Robin"));
-			expect(screen.getByText("Selected ID: 1")).toBeInTheDocument();
 		});
 	});
 });

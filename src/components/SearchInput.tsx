@@ -133,6 +133,7 @@ export const SearchInput: React.FC = () => {
 				>
 					<div className={`search-input ${focused ? "focused" : ""}`}>
 						<input
+							data-testid="search-input"
 							type="text"
 							value={query}
 							onChange={handleInputChange}
@@ -144,7 +145,7 @@ export const SearchInput: React.FC = () => {
 
 						<PuffLoader
 							className="loading-icon"
-							size="15"
+							size="15px"
 							cssOverride={{
 								position: "absolute",
 								top: "7px",
