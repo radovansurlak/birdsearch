@@ -1,5 +1,5 @@
 import axios, { AxiosError } from "axios";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import {
 	API_URL,
 	NO_RESULTS_MESSAGE,
@@ -18,10 +18,20 @@ const INITIAL_SEARCH_STATE: SearchState = {
 	selectedId: null,
 };
 
+const useAbortController = () => {
+	const abortControllerRef = useRef<AbortController | null>(null);
+
+	useEffect(() => abortControllerRef.current?.abort, []);
+
+	return { abortControllerRef };
+};
+
 export const useSearch = () => {
 	const [query, setQuery] = useState<string>("");
 	const [searchState, setSearchState] =
 		useState<SearchState>(INITIAL_SEARCH_STATE);
+
+	const { abortControllerRef } = useAbortController();
 
 	const updateSearchState = useCallback((updates: Partial<SearchState>) => {
 		setSearchState((prev) => ({ ...prev, ...updates }));
@@ -30,9 +40,19 @@ export const useSearch = () => {
 	const fetchSuggestions = useCallback(
 		debounce(async (searchQuery: string) => {
 			try {
+				if (abortControllerRef.current) {
+					abortControllerRef.current.abort();
+				}
+
+				abortControllerRef.current = new AbortController();
+
 				updateSearchState({ isLoading: true });
+
 				const response = await axios.get<Bird[]>(
-					`${API_URL}?q=${searchQuery}`
+					`${API_URL}?q=${searchQuery}`,
+					{
+						signal: abortControllerRef.current.signal,
+					}
 				);
 
 				updateSearchState({
@@ -42,6 +62,10 @@ export const useSearch = () => {
 					isLoading: false,
 				});
 			} catch (error) {
+				if (axios.isCancel(error)) {
+					return;
+				}
+
 				const errorMessage =
 					error instanceof AxiosError
 						? error.response?.data?.message || API_ERROR_MESSAGE
