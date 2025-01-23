@@ -57,7 +57,7 @@ describe("SearchInput", () => {
 
 		render(<SearchInput />);
 
-		fireEvent.change(screen.getByTestId("search-input"), {
+		fireEvent.change(screen.getByTestId("search-input"), {	
 			target: { value: HUMMINGBIRD_SELECTOR },
 		});
 
