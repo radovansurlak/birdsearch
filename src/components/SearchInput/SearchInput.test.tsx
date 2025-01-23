@@ -71,4 +71,22 @@ describe("SearchInput", () => {
 			expect(screen.getByText(/Selected ID:/i)).toBeInTheDocument();
 		});
 	});
+
+	it("supports clearing the input", async () => {
+		mockedAxios.get.mockResolvedValueOnce({
+			data: MOCK_API_RESPONSE,
+		});
+
+		render(<SearchInput />);
+
+		fireEvent.change(screen.getByTestId("search-input"), {
+			target: { value: "test value" },
+		});
+
+		await userEvent.click(screen.getByTestId("clear-button"));
+
+		await waitFor(() => {
+			expect(screen.getByTestId("search-input")).toHaveValue("");
+		});
+	});
 });

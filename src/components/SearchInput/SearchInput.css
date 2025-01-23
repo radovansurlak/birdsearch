@@ -16,7 +16,7 @@
 	transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
 }
 
-.clear-icon {
+.clear-button {
 	margin-right: 5px;
 	color: #888;
 	cursor: pointer;
@@ -25,12 +25,12 @@
 	transition: all 0.2s ease-in-out;
 }
 
-.clear-icon.show {
+.clear-button.show {
 	opacity: 1;
 }
 
-.clear-icon:hover,
-.clear-icon:focus {
+.clear-button:hover,
+.clear-button:focus {
 	transform: scale(1.1);
 	color: black;
 }

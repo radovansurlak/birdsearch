@@ -172,7 +172,8 @@ export const SearchInput: React.FC<SearchInputProps> = ({ onSelect }) => {
 					/>
 
 					<LuX
-						className={`clear-icon ${
+						data-testid="clear-button"
+						className={`clear-button ${
 							showClearButton ? "show" : ""
 						}`}
 						onClick={clearInput}
