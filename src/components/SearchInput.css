@@ -94,14 +94,19 @@
 	align-self: center;
 	color: #888;
 	font-size: 14px;
-	margin-top: 20px;
+	margin-top: 24px;
 }
 
 .selected-id {
+	padding: 8px 15px;
+	border: 2px solid rgb(225, 225, 225);
+	background: #75b7ff;
+	color: white;
+	background: linear-gradient(90deg, rgba(63,94,251,0.8) 0%, rgba(252,70,107,0.8) 100%);
+	border-radius: 20px;
 	font-weight: 500;
-	margin-top: 20px;
+	margin-bottom: 20px;
 	align-self: center;
-	color: #888;
 	font-size: 14px;
 }
 

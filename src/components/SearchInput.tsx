@@ -193,6 +193,11 @@ export const SearchInput: React.FC<SearchInputProps> = ({ onSelect }) => {
 			role="search"
 			aria-label="Search birds"
 		>
+			{selectedId && (
+				<div className="selected-id" aria-live="polite">
+					Selected ID: {selectedId}
+				</div>
+			)}
 			<div className={`input-wrapper ${showSuggestions ? "open" : ""}`}>
 				<div className={`search-input ${isFocused ? "focused" : ""}`}>
 					<input
@@ -279,11 +284,6 @@ export const SearchInput: React.FC<SearchInputProps> = ({ onSelect }) => {
 					marginTop: "20px",
 				}}
 			/>
-			{selectedId && (
-				<div className="selected-id" aria-live="polite">
-					Selected ID: {selectedId}
-				</div>
-			)}
 		</div>
 	);
 };
