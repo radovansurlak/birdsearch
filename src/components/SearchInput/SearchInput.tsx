@@ -1,78 +1,35 @@
-import axios, { AxiosError } from "axios";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { LuSearch } from "react-icons/lu";
 import { PuffLoader } from "react-spinners";
 import {
-	API_ERROR_MESSAGE,
-	API_URL,
 	LOADING_EFFECT_DEBOUNCE_TIME_MS,
 	NO_RESULTS_MESSAGE,
-	SEARCH_INPUT_DEBOUNCE_TIME_MS,
-} from "../constants";
-import { Bird } from "../types";
-import { debounce, emphasizeQueryInTextResult } from "../utils";
+} from "../../constants";
+import { emphasizeQueryInTextResult } from "../../utils";
+import { NotFoundSVG } from "../NotFoundSVG";
+import { SearchInputProps } from "../types";
+import { useSearch } from "./hooks/useSearch";
 import "./SearchInput.css";
-import { SearchInputProps, SearchState } from "./types";
-import { NotFoundSVG } from "./NotFoundSVG";
-
-const INITIAL_SEARCH_STATE: SearchState = {
-	suggestions: [],
-	loading: false,
-	message: "",
-	activeIndex: null,
-	selectedId: null,
-};
+import { useFocusOnMount } from "./hooks/useFocusOnMount";
 
 export const SearchInput: React.FC<SearchInputProps> = ({ onSelect }) => {
-	const [query, setQuery] = useState<string>("");
-	const [searchState, setSearchState] =
-		useState<SearchState>(INITIAL_SEARCH_STATE);
+	const {
+		query,
+		setQuery,
+		searchState,
+		fetchSuggestions,
+		updateSearchState,
+	} = useSearch();
+
+	const { inputRef } = useFocusOnMount();
+
 	const [isFocused, setIsFocused] = useState<boolean>(true);
-	const [isMouseHovering, setIsMouseHovering] = useState(false);
 	const [isTyping, setIsTyping] = useState(false);
 
 	const typingTimeout = useRef<NodeJS.Timeout | null>(null);
 	const suggestionsRef = useRef<HTMLUListElement>(null);
+
 	const itemsRef = useRef<(HTMLLIElement | null)[]>([]);
-	const inputRef = useRef<HTMLInputElement>(null);
-
-	const updateSearchState = useCallback((updates: Partial<SearchState>) => {
-		setSearchState((prev) => ({ ...prev, ...updates }));
-	}, []);
-
-	useEffect(() => {
-		inputRef.current?.focus();
-	}, []);
-
-	const fetchSuggestions = useCallback(
-		debounce(async (searchQuery: string) => {
-			try {
-				updateSearchState({ loading: true });
-				const response = await axios.get<Bird[]>(
-					`${API_URL}?q=${searchQuery}`
-				);
-
-				updateSearchState({
-					suggestions: response.data,
-					message:
-						response.data.length === 0 ? NO_RESULTS_MESSAGE : "",
-					loading: false,
-				});
-			} catch (error) {
-				const errorMessage =
-					error instanceof AxiosError
-						? error.response?.data?.message || API_ERROR_MESSAGE
-						: API_ERROR_MESSAGE;
-
-				updateSearchState({
-					message: errorMessage,
-					loading: false,
-					suggestions: [],
-				});
-			}
-		}, SEARCH_INPUT_DEBOUNCE_TIME_MS),
-		[updateSearchState]
-	);
 
 	const scrollToActiveItem = useCallback((index: number) => {
 		const currentActiveItem = itemsRef.current[index];
@@ -100,13 +57,11 @@ export const SearchInput: React.FC<SearchInputProps> = ({ onSelect }) => {
 			setQuery("");
 			onSelect?.(id);
 		},
-		[onSelect, updateSearchState]
+		[onSelect, updateSearchState, setQuery]
 	);
 
 	const handleKeyDown = useCallback(
 		(event: React.KeyboardEvent<HTMLInputElement>) => {
-			if (isMouseHovering) return;
-
 			const { suggestions, activeIndex } = searchState;
 
 			switch (event.key) {
@@ -143,13 +98,15 @@ export const SearchInput: React.FC<SearchInputProps> = ({ onSelect }) => {
 					break;
 			}
 		},
-		[isMouseHovering, searchState, updateSearchState, handleSuggestionClick]
+		[inputRef, searchState, updateSearchState, handleSuggestionClick]
 	);
 
 	const handleInputChange = useCallback(
 		(event: React.ChangeEvent<HTMLInputElement>) => {
 			setIsTyping(true);
+
 			const value = event.target.value;
+
 			setQuery(value);
 
 			updateSearchState({ activeIndex: null });
@@ -171,13 +128,12 @@ export const SearchInput: React.FC<SearchInputProps> = ({ onSelect }) => {
 				setIsTyping(false);
 			}, LOADING_EFFECT_DEBOUNCE_TIME_MS);
 		},
-		[fetchSuggestions, updateSearchState]
+		[fetchSuggestions, updateSearchState, setQuery]
 	);
 
 	const handleMouseEnter = useCallback(
 		(index: number) => {
 			updateSearchState({ activeIndex: index });
-			setIsMouseHovering(true);
 		},
 		[updateSearchState]
 	);
@@ -259,7 +215,6 @@ export const SearchInput: React.FC<SearchInputProps> = ({ onSelect }) => {
 								handleSuggestionClick(item.id);
 							}}
 							onMouseEnter={() => handleMouseEnter(index)}
-							onMouseLeave={() => setIsMouseHovering(false)}
 							className={activeIndex === index ? "active" : ""}
 							ref={(el) => (itemsRef.current[index] = el)}
 							role="option"
@@ -271,11 +226,13 @@ export const SearchInput: React.FC<SearchInputProps> = ({ onSelect }) => {
 					))}
 				</ul>
 			)}
+
 			{message && (
 				<div className="message" role="status" aria-live="polite">
 					{message}
 				</div>
 			)}
+
 			<NotFoundSVG
 				style={{
 					opacity: searchState.message === NO_RESULTS_MESSAGE ? 1 : 0,
