@@ -1,5 +1,5 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
-import { LuSearch } from "react-icons/lu";
+import React, { useCallback, useRef, useState } from "react";
+import { LuSearch, LuX } from "react-icons/lu";
 import { PuffLoader } from "react-spinners";
 import {
 	LOADING_EFFECT_DEBOUNCE_TIME_MS,
@@ -11,6 +11,7 @@ import { SearchInputProps } from "../types";
 import { useSearch } from "./hooks/useSearch";
 import "./SearchInput.css";
 import { useFocusOnMount } from "./hooks/useFocusOnMount";
+import { useScrollToActiveItem } from "./hooks/useScrollToActiveItem";
 
 export const SearchInput: React.FC<SearchInputProps> = ({ onSelect }) => {
 	const {
@@ -26,27 +27,11 @@ export const SearchInput: React.FC<SearchInputProps> = ({ onSelect }) => {
 	const [isFocused, setIsFocused] = useState<boolean>(true);
 	const [isTyping, setIsTyping] = useState(false);
 
+	const { itemsRef, suggestionsRef } = useScrollToActiveItem(
+		searchState.activeIndex
+	);
+
 	const typingTimeout = useRef<NodeJS.Timeout | null>(null);
-	const suggestionsRef = useRef<HTMLUListElement>(null);
-
-	const itemsRef = useRef<(HTMLLIElement | null)[]>([]);
-
-	const scrollToActiveItem = useCallback((index: number) => {
-		const currentActiveItem = itemsRef.current[index];
-
-		if (currentActiveItem) {
-			currentActiveItem.scrollIntoView({
-				behavior: "smooth",
-				block: "nearest",
-			});
-		}
-	}, []);
-
-	useEffect(() => {
-		if (searchState.activeIndex !== null) {
-			scrollToActiveItem(searchState.activeIndex);
-		}
-	}, [searchState.activeIndex, scrollToActiveItem]);
 
 	const handleSuggestionClick = useCallback(
 		(id: number) => {
@@ -95,7 +80,6 @@ export const SearchInput: React.FC<SearchInputProps> = ({ onSelect }) => {
 						suggestions: [],
 					});
 					inputRef.current?.blur();
-					break;
 			}
 		},
 		[inputRef, searchState, updateSearchState, handleSuggestionClick]
@@ -138,10 +122,20 @@ export const SearchInput: React.FC<SearchInputProps> = ({ onSelect }) => {
 		[updateSearchState]
 	);
 
-	const { suggestions, loading, message, activeIndex, selectedId } =
+	const clearInput = useCallback(() => {
+		setQuery("");
+		updateSearchState({
+			suggestions: [],
+			message: "",
+			activeIndex: null,
+		});
+	}, [setQuery, updateSearchState]);
+
+	const { suggestions, isLoading, message, activeIndex, selectedId } =
 		searchState;
 
 	const showSuggestions = suggestions.length > 0 && isFocused;
+	const showClearButton = query.length > 0;
 
 	return (
 		<div
@@ -177,6 +171,21 @@ export const SearchInput: React.FC<SearchInputProps> = ({ onSelect }) => {
 						}
 					/>
 
+					<LuX
+						className={`clear-icon ${
+							showClearButton ? "show" : ""
+						}`}
+						onClick={clearInput}
+						onKeyDown={(e) => {
+							if (e.key === "Enter") {
+								clearInput();
+							}
+						}}
+						tabIndex={0}
+						role="button"
+						aria-label="Clear search input"
+					/>
+
 					<PuffLoader
 						className="loading-icon"
 						size="15px"
@@ -184,14 +193,14 @@ export const SearchInput: React.FC<SearchInputProps> = ({ onSelect }) => {
 							position: "absolute",
 							top: "7px",
 							right: "20px",
-							opacity: loading || isTyping ? 1 : 0,
+							opacity: isLoading || isTyping ? 1 : 0,
 						}}
 						aria-hidden="true"
 					/>
 					<LuSearch
 						size="20px"
 						className={`search-icon ${
-							!loading && !isTyping ? "show" : ""
+							!isLoading && !isTyping ? "show" : ""
 						}`}
 						aria-hidden="true"
 					/>
@@ -209,11 +218,7 @@ export const SearchInput: React.FC<SearchInputProps> = ({ onSelect }) => {
 						<li
 							key={item.id}
 							id={`suggestion-${index}`}
-							onMouseDown={(event) => {
-								event.preventDefault();
-								event.stopPropagation();
-								handleSuggestionClick(item.id);
-							}}
+							onMouseDown={() => handleSuggestionClick(item.id)}
 							onMouseEnter={() => handleMouseEnter(index)}
 							className={activeIndex === index ? "active" : ""}
 							ref={(el) => (itemsRef.current[index] = el)}

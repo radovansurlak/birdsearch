@@ -2,7 +2,7 @@ import { Bird } from "../types";
 
 export interface SearchState {
 	suggestions: Bird[];
-	loading: boolean;
+	isLoading: boolean;
 	message: string;
 	activeIndex: number | null;
 	selectedId: number | null;

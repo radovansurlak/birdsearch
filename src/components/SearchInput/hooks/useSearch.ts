@@ -1,13 +1,18 @@
 import axios, { AxiosError } from "axios";
 import { useState, useCallback } from "react";
-import { API_URL, NO_RESULTS_MESSAGE, API_ERROR_MESSAGE, SEARCH_INPUT_DEBOUNCE_TIME_MS } from "../../../constants";
+import {
+	API_URL,
+	NO_RESULTS_MESSAGE,
+	API_ERROR_MESSAGE,
+	SEARCH_INPUT_DEBOUNCE_TIME_MS,
+} from "../../../constants";
 import { Bird } from "../../../types";
 import { debounce } from "../../../utils";
 import { SearchState } from "../../types";
 
 const INITIAL_SEARCH_STATE: SearchState = {
 	suggestions: [],
-	loading: false,
+	isLoading: false,
 	message: "",
 	activeIndex: null,
 	selectedId: null,
@@ -25,7 +30,7 @@ export const useSearch = () => {
 	const fetchSuggestions = useCallback(
 		debounce(async (searchQuery: string) => {
 			try {
-				updateSearchState({ loading: true });
+				updateSearchState({ isLoading: true });
 				const response = await axios.get<Bird[]>(
 					`${API_URL}?q=${searchQuery}`
 				);
@@ -34,7 +39,7 @@ export const useSearch = () => {
 					suggestions: response.data,
 					message:
 						response.data.length === 0 ? NO_RESULTS_MESSAGE : "",
-					loading: false,
+					isLoading: false,
 				});
 			} catch (error) {
 				const errorMessage =
@@ -44,7 +49,7 @@ export const useSearch = () => {
 
 				updateSearchState({
 					message: errorMessage,
-					loading: false,
+					isLoading: false,
 					suggestions: [],
 				});
 			}
