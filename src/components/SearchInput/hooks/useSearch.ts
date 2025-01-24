@@ -5,7 +5,7 @@ import {
 	NO_RESULTS_MESSAGE,
 	API_ERROR_MESSAGE,
 	SEARCH_INPUT_DEBOUNCE_TIME_MS,
-} from "../../../constants";
+} from "../constants";
 import { Bird } from "../../../types";
 import { debounce } from "../../../utils";
 import { SearchState } from "../../types";

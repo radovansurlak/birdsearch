@@ -3,34 +3,13 @@ import userEvent from "@testing-library/user-event";
 
 import axios from "axios";
 import SearchInput from "./SearchInput";
+import { MOCK_API_RESPONSE } from "../../mocks";
 
 jest.mock("axios");
+
 const mockedAxios = axios as jest.Mocked<typeof axios>;
 
 const HUMMINGBIRD_SELECTOR = "Allen's Hummingbird";
-
-const MOCK_API_RESPONSE = [
-	{ id: 6, title: "Allen's Hummingbird" },
-	{ id: 7, title: "Altamira Oriole" },
-	{ id: 8, title: "American Avocet" },
-	{ id: 9, title: "American Bittern" },
-	{ id: 10, title: "American Black Duck" },
-	{ id: 11, title: "American Coot" },
-	{ id: 12, title: "American Crow" },
-	{ id: 13, title: "American Dipper" },
-	{ id: 14, title: "American Golden-Plover" },
-	{ id: 15, title: "American Goldfinch" },
-	{ id: 16, title: "American Kestrel" },
-	{ id: 17, title: "American Oystercatcher" },
-	{ id: 18, title: "American Pipit" },
-	{ id: 19, title: "American Redstart" },
-	{ id: 20, title: "American Robin" },
-	{ id: 21, title: "American Tree Sparrow" },
-	{ id: 22, title: "American White Pelican" },
-	{ id: 23, title: "American Wigeon" },
-	{ id: 24, title: "American Woodcock" },
-	{ id: 25, title: "Ancient Murrelet" },
-];
 
 HTMLElement.prototype.scrollIntoView = jest.fn();
 describe("SearchInput", () => {
@@ -57,7 +36,7 @@ describe("SearchInput", () => {
 
 		render(<SearchInput />);
 
-		fireEvent.change(screen.getByTestId("search-input"), {	
+		fireEvent.change(screen.getByTestId("search-input"), {
 			target: { value: HUMMINGBIRD_SELECTOR },
 		});
 

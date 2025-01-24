@@ -4,7 +4,7 @@ import { PuffLoader } from "react-spinners";
 import {
 	LOADING_EFFECT_DEBOUNCE_TIME_MS,
 	NO_RESULTS_MESSAGE,
-} from "../../constants";
+} from "./constants";
 import { emphasizeQueryInTextResult } from "../../utils";
 import { NotFoundSVG } from "../NotFoundSVG";
 import { SearchInputProps } from "../types";
