@@ -37,6 +37,7 @@ export const useSearch = () => {
 		setSearchState((prev) => ({ ...prev, ...updates }));
 	}, []);
 
+	// eslint-disable-next-line react-hooks/exhaustive-deps
 	const fetchSuggestions = useCallback(
 		debounce(async (searchQuery: string) => {
 			try {
