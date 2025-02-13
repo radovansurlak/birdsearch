@@ -8,7 +8,7 @@ import {
 } from "../constants";
 import { Bird } from "../../../types";
 import { debounce } from "../../../utils";
-import { SearchState } from "../../types";
+import { SearchState } from "../types";
 
 const INITIAL_SEARCH_STATE: SearchState = {
 	suggestions: [],

@@ -7,11 +7,12 @@ import {
 } from "./constants";
 import { emphasizeQueryInTextResult } from "../../utils";
 import { NotFoundSVG } from "../NotFoundSVG";
-import { SearchInputProps } from "../types";
+import { SearchInputProps } from "./types";
 import { useSearch } from "./hooks/useSearch";
-import "./SearchInput.css";
 import { useFocusOnMount } from "./hooks/useFocusOnMount";
 import { useScrollToActiveItem } from "./hooks/useScrollToActiveItem";
+
+import "./SearchInput.css";
 
 export const SearchInput: React.FC<SearchInputProps> = ({ onSelect }) => {
 	const {

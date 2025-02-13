@@ -1,4 +1,4 @@
-import { Bird } from "../types";
+import { Bird } from "../../types";
 
 export interface SearchState {
 	suggestions: Bird[];
